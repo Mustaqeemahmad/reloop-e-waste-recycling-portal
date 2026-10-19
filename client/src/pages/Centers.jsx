@@ -1,0 +1,12 @@
+import { useEffect, useState } from 'react';
+import { MapPin, Phone, Recycle, Search } from 'lucide-react';
+import api from '../api.js';
+export default function Centers(){
+ const [centers,setCenters]=useState([]);const [search,setSearch]=useState('');const [error,setError]=useState('');
+ useEffect(()=>{api.get('/centers').then(({data})=>setCenters(data.centers)).catch(()=>setError('Could not load centers. Please try again later.'));},[]);
+ const shown=centers.filter(c=>`${c.name} ${c.city} ${c.address}`.toLowerCase().includes(search.toLowerCase()));
+ return <div className="mx-auto min-h-[60vh] max-w-7xl px-4 py-12 sm:px-6"><div className="rounded-3xl bg-green-50 p-8 sm:p-10"><p className="text-sm font-black uppercase tracking-widest text-forest">Find a drop-off point</p><h1 className="mt-3 text-4xl font-black">Recycling centers</h1><p className="mt-3 max-w-2xl leading-7 text-slate-600">Choose a center that works for you. Center listings are managed by the portal administrator.</p><div className="mt-6 flex max-w-xl items-center gap-3 rounded-2xl border border-green-100 bg-white px-4"><Search className="text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} className="w-full py-4 outline-none" placeholder="Search by center, city or address"/></div></div>
+ {error&&<p className="mt-6 text-red-600">{error}</p>}{!error&&!centers.length&&<div className="mt-8 rounded-2xl border border-dashed border-green-200 p-10 text-center"><Recycle className="mx-auto text-green-700" size={40}/><h2 className="mt-4 text-xl font-bold">No centers listed yet</h2><p className="mt-2 text-slate-500">An administrator can add recycling centers from the portal.</p></div>}
+ <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">{shown.map(c=><article key={c._id} className="rounded-2xl border border-green-100 bg-white p-6 shadow-sm"><span className="inline-flex rounded-xl bg-green-100 p-3 text-forest"><MapPin/></span><h2 className="mt-4 text-xl font-extrabold">{c.name}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{c.address}, {c.city}</p>{c.phone&&<p className="mt-3 text-sm text-slate-600"><Phone size={15} className="mr-2 inline"/>{c.phone}</p>}{c.acceptedCategories?.length>0&&<div className="mt-4 flex flex-wrap gap-2">{c.acceptedCategories.map(x=><span key={x} className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-forest">{x}</span>)}</div>}</article>)}</div>
+ {!error&&centers.length>0&&!shown.length&&<p className="py-12 text-center text-slate-500">No centers match your search.</p>}</div>;
+}
